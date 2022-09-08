@@ -7,12 +7,24 @@ import (
 
 // 处理和客户端的通讯
 func process(conn net.Conn) {
+	//延时关闭coon
+	defer conn.Close()
+	//	循环的读取客户端发送的消息
+	for {
+		buf := make([]byte, 8096)
+		n, err := conn.Read(buf[:4])
+		if n != 4 || err != nil {
+			fmt.Println("conn.Read err=", err)
+			return
+		}
+		fmt.Println("读取到的buf=", buf[:4])
+	}
 
 }
 
 func main() {
 	//	提示信息
-	fmt.Println("服务器在8889端口坚挺...")
+	fmt.Println("服务器在8889端口监听...")
 	listen, err := net.Listen("tcp", "0.0.0.0:8889")
 	if err != nil {
 		fmt.Println("net.listen err=", err)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"client/message"
+	"client/utils"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -17,7 +18,12 @@ func login(userId int, userPwd string) (err error) {
 		return
 	}
 	// 2、defer关闭conn
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			return
+		}
+	}(conn)
 	// 3、准备通过conn发送消息给服务器
 	var mes message.Message
 	mes.Type = message.LoginMesType
@@ -57,6 +63,20 @@ func login(userId int, userPwd string) (err error) {
 	if err != nil {
 		fmt.Println("conn.Write(data) fail", err)
 		return
+	}
+
+	//处理服务端返回的消息
+	mes, err = utils.ReadPkg(conn)
+	if err != nil {
+		fmt.Println("utils.ReadPkg fail err", err)
+	}
+	//将mes的data部分反序列化成LoginResMes
+	var loginResMes message.LoginResMes
+	err = json.Unmarshal([]byte(mes.Data), &loginResMes)
+	if loginResMes.Code == 200 {
+		fmt.Println("登陆成功")
+	} else if loginResMes.Code == 500 {
+		fmt.Println(loginResMes.Error)
 	}
 	return
 }

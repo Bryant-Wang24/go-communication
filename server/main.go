@@ -36,10 +36,98 @@ func readPkg(conn net.Conn) (mes message.Message, err error) {
 	return
 }
 
+func writePkg(conn net.Conn, data []byte) (err error) {
+	//发送一个长度给对方
+	var pkgLen uint32
+	pkgLen = uint32(len(data))
+	var buf [4]byte
+	binary.BigEndian.PutUint32(buf[0:4], pkgLen)
+	//发送长度
+	n, err := conn.Write(buf[:4])
+	if n != 4 || err != nil {
+		fmt.Println("conn.Write fail", err)
+		return
+	}
+	//	发送data本身
+	n, err = conn.Write(data)
+	if n != int(pkgLen) || err != nil {
+		fmt.Println("conn.Write fail", err)
+		return
+	}
+	return
+}
+
+// 编写一个函数serverProcessLogin函数，处理登陆请求
+func serverProcessLogin(conn net.Conn, mes *message.Message) (err error) {
+	//	先从mes中取出mes.Data,并直接反序列化成LoginMes
+	var loginMes message.LoginMes
+	err = json.Unmarshal([]byte(mes.Data), &loginMes)
+	if err != nil {
+		fmt.Println("json.Unmarshal fail err=", err)
+		return
+	}
+	//	声明一个resMes
+	var resMes message.Message
+	resMes.Type = message.LoginResMesType
+	//	声明一个LoginResMes
+	var loginResMes message.LoginResMes
+
+	//	如果用户id=100，密码=123456，认为合法，否则不合法
+	if loginMes.UserId == 100 && loginMes.UserPwd == "123456" {
+		//	合法
+		loginResMes.Code = 200
+	} else {
+		//	不合法
+		loginResMes.Code = 500
+		loginResMes.Error = "该用户未注册"
+	}
+	//	将loginResMes序列化
+	data, err := json.Marshal(loginResMes)
+	if err != nil {
+		fmt.Println("json.Marshal fail err=", err)
+		return
+	}
+	//	将data赋值给resMes
+	resMes.Data = string(data)
+	//	对resMes 进行序列化，准备发送
+	data, err = json.Marshal(resMes)
+	if err != nil {
+		fmt.Println("json.Marshal fail err=", err)
+		return
+	}
+	//	发送data，封装到writePkg函数
+	err = writePkg(conn, data)
+	if err != nil {
+		return err
+	}
+	return
+}
+
+// 编写一个 serverProcessMes函数
+// 功能：根据客户端发送消息种类不同，决定调用哪个函数来处理
+func serverProcessMes(conn net.Conn, mes *message.Message) (err error) {
+	switch mes.Type {
+	case message.LoginMesType:
+		//处理登陆
+		err = serverProcessLogin(conn, mes)
+	//case : message.Register
+
+	//处理注册
+	default:
+		fmt.Println("消息类型不存在，无法处理...")
+	}
+	return
+}
+
 // 处理和客户端的通讯
 func process(conn net.Conn) {
 	//延时关闭coon
-	defer conn.Close()
+	defer func(conn net.Conn) {
+		err := conn.Close()
+		if err != nil {
+			return
+		}
+	}(conn)
 	//	循环的读取客户端发送的消息
 	for {
 		mes, err := readPkg(conn)
@@ -51,9 +139,12 @@ func process(conn net.Conn) {
 				fmt.Println("readPkg err=", err)
 				return
 			}
-
 		}
 		fmt.Println("mes=", mes)
+		err = serverProcessMes(conn, &mes)
+		if err != nil {
+			return
+		}
 	}
 
 }

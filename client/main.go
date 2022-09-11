@@ -20,7 +20,10 @@ func main() {
 		fmt.Println("\t\t\t 3 退出系统")
 		fmt.Println("\t\t\t 3 请选择1-3)")
 
-		fmt.Scanf("%d\n", &key)
+		_, err := fmt.Scanf("%d\n", &key)
+		if err != nil {
+			return
+		}
 		switch key {
 		case 1:
 			fmt.Println("登陆聊天室")
@@ -39,15 +42,21 @@ func main() {
 	// 根据用户的输入。显示新的提示信息
 	if key == 1 { //1说明用户要登录
 		fmt.Println("请输入用户id")
-		fmt.Scanf("%d\n", &userId)
-		fmt.Println("请输入用户密码")
-		fmt.Scanf("%s\n", &userPwd)
-		err := login(userId, userPwd)
+		_, err := fmt.Scanf("%d\n", &userId)
 		if err != nil {
-			fmt.Println("登陆失败")
-		} else {
-			fmt.Println("登陆成功")
+			return
 		}
+		fmt.Println("请输入用户密码")
+		_, err = fmt.Scanf("%s\n", &userPwd)
+		if err != nil {
+			return
+		}
+		err = login(userId, userPwd)
+		//if err != nil {
+		//	fmt.Println("登陆失败")
+		//} else {
+		//	fmt.Println("登陆成功")
+		//}
 	} else if key == 2 {
 		fmt.Println("进行用户注册的逻辑")
 	}

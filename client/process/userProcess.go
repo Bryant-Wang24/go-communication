@@ -1,4 +1,4 @@
-package main
+package process
 
 import (
 	"client/message"
@@ -9,7 +9,10 @@ import (
 	"net"
 )
 
-func login(userId int, userPwd string) (err error) {
+type UserProcess struct {
+}
+
+func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 	fmt.Printf("userId=%d\nuserPwd=%s\n", userId, userPwd)
 	// 1、连接到服务器
 	conn, err := net.Dial("tcp", "localhost:8889")
@@ -66,7 +69,10 @@ func login(userId int, userPwd string) (err error) {
 	}
 
 	//处理服务端返回的消息
-	mes, err = utils.ReadPkg(conn)
+	tf := &utils.Transfer{
+		Conn: conn,
+	}
+	mes, err = tf.ReadPkg()
 	if err != nil {
 		fmt.Println("utils.ReadPkg fail err", err)
 	}
@@ -74,7 +80,14 @@ func login(userId int, userPwd string) (err error) {
 	var loginResMes message.LoginResMes
 	err = json.Unmarshal([]byte(mes.Data), &loginResMes)
 	if loginResMes.Code == 200 {
-		fmt.Println("登陆成功")
+		//这里还需要在客户端启动一个协程用来保持和服务端的通讯
+		//如果服务器有数据推送给客户端，则接受并显示在客户端的终端
+		go serverProcessMes(conn)
+
+		//显示我们的登陆成功的菜单【循环显示】
+		for {
+			ShowMenu()
+		}
 	} else if loginResMes.Code == 500 {
 		fmt.Println(loginResMes.Error)
 	}

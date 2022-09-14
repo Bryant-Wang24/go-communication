@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"time"
 )
 
 // 处理和客户端的通讯
@@ -26,6 +27,8 @@ func process(conn net.Conn) {
 }
 
 func main() {
+	//当服务启动时，初始化我们的redis连接池
+	initPool("localhost:6379", 16, 0, 300*time.Second)
 	//	提示信息
 	fmt.Println("服务器在8889端口监听...")
 	listen, err := net.Listen("tcp", "0.0.0.0:8889")

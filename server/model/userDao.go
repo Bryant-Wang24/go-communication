@@ -30,3 +30,21 @@ func (t *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
 	}
 	return
 }
+
+// Login 完成登陆的校验
+// 如果用户的id和pwd都正确，则返回一个user实例
+// 如果用户的id获pwd有错误，则返回对应的错误信息
+func (t *UserDao) Login(userId int, userPwd string) (user *User, err error) {
+	//	先从UserDao的连接池中取出一根连接
+	conn := t.pool.Get()
+	defer conn.Close()
+	user, err = t.getUserById(conn, userId)
+	if err != nil {
+		return
+	}
+	//	这时证明这个用户
+	if user.UserPwd != userPwd {
+		err = ERROR_USER_PWD
+		return
+	}
+}

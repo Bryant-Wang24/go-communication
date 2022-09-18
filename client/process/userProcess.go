@@ -61,7 +61,7 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 		fmt.Println("conn.Write(bytes) fail", err)
 		return
 	}
-	fmt.Printf("changdu=%d neirong=%s", len(data), string(data))
+	fmt.Printf("长度=%d 内容=%s\n", len(data), string(data))
 	//发送消息本身
 	_, err = conn.Write(data)
 	if err != nil {
@@ -76,6 +76,7 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 	mes, err = tf.ReadPkg()
 	if err != nil {
 		fmt.Println("utils.ReadPkg fail err", err)
+		return
 	}
 	//将mes的data部分反序列化成LoginResMes
 	var loginResMes message.LoginResMes
@@ -89,7 +90,7 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 		for {
 			ShowMenu()
 		}
-	} else if loginResMes.Code == 500 {
+	} else {
 		fmt.Println(loginResMes.Error)
 	}
 	return

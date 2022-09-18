@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"server/message"
+	"server/model"
 	"server/utils"
 )
 
@@ -27,14 +28,22 @@ func (t *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 	//	声明一个LoginResMes
 	var loginResMes message.LoginResMes
 
-	//	如果用户id=100，密码=123456，认为合法，否则不合法
-	if loginMes.UserId == 100 && loginMes.UserPwd == "123456" {
-		//	合法
-		loginResMes.Code = 200
+	////使用model.MyUserDao到redis数据库去验证
+	user, err := model.MyUserDao.Login(loginMes.UserId, loginMes.UserPwd)
+	if err != nil {
+		if err == model.ERROR_USER_NOTEXISTS {
+			loginResMes.Code = 500
+			loginResMes.Error = err.Error()
+		} else if err == model.ERROR_USER_PWD {
+			loginResMes.Code = 403
+			loginResMes.Error = err.Error()
+		} else {
+			loginResMes.Code = 505
+			loginResMes.Error = "服务器内部错误"
+		}
 	} else {
-		//	不合法
-		loginResMes.Code = 500
-		loginResMes.Error = "该用户未注册"
+		loginResMes.Code = 200
+		fmt.Println(user, "登陆成功")
 	}
 	//	将loginResMes序列化
 	data, err := json.Marshal(loginResMes)

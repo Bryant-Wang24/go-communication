@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"server/model"
 	"time"
 )
 
@@ -26,9 +27,21 @@ func process(conn net.Conn) {
 	}
 }
 
-func main() {
+// init 会在main函数之前调用
+func init() {
 	//当服务启动时，初始化我们的redis连接池
 	initPool("localhost:6379", 16, 0, 300*time.Second)
+	initUserDao()
+}
+
+// 完成对UserDao初始化任务
+func initUserDao() {
+	//	pool是一个全局的变量
+	//	初始化顺序，先initPool，在initUserDao
+	model.MyUserDao = model.NewUserDao(pool)
+}
+
+func main() {
 	//	提示信息
 	fmt.Println("服务器在8889端口监听...")
 	listen, err := net.Listen("tcp", "0.0.0.0:8889")

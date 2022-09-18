@@ -6,9 +6,22 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+// MyUserDao 定义一个全局变量，在需要和redis操作时，直接使用
+var (
+	MyUserDao *UserDao
+)
+
 // UserDao 定义一个UserDao结构体，完成对User结构体的各种操作
 type UserDao struct {
 	pool *redis.Pool
+}
+
+// NewUserDao 使用工厂模式，创建一个UserDao实例
+func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
+	userDao = &UserDao{
+		pool: pool,
+	}
+	return
 }
 
 // 根据用户id返回一个User实例和err
@@ -37,14 +50,21 @@ func (t *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
 func (t *UserDao) Login(userId int, userPwd string) (user *User, err error) {
 	//	先从UserDao的连接池中取出一根连接
 	conn := t.pool.Get()
-	defer conn.Close()
+	defer func(conn redis.Conn) {
+		err := conn.Close()
+		if err != nil {
+			return
+		}
+	}(conn)
 	user, err = t.getUserById(conn, userId)
 	if err != nil {
 		return
 	}
 	//	这时证明这个用户
 	if user.UserPwd != userPwd {
+		fmt.Println("用户密码错误")
 		err = ERROR_USER_PWD
 		return
 	}
+	return
 }

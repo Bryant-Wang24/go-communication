@@ -1,8 +1,12 @@
 package message
 
+import "client/model"
+
 const (
-	LoginMesType    = "LoginMes"
-	LoginResMesType = "LoginResMes"
+	LoginMesType       = "LoginMes"
+	LoginResMesType    = "LoginResMes"
+	RegisterMesType    = "RegisterMes"
+	RegisterResMesType = "RegisterResMes"
 )
 
 type Message struct {
@@ -20,4 +24,12 @@ type LoginMes struct {
 type LoginResMes struct {
 	Code  int    `json:"code"`  //返回状态码 500 表示该用户未注册 200 表示登录成功
 	Error string `json:"error"` //返回错误信息
+}
+
+type RegisterMes struct {
+	User model.User `json:"user"` //类型是User结构体
+}
+type RegisterResMes struct {
+	Code  int    `json:"code"`
+	Error string `json:"error"`
 }

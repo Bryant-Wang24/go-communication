@@ -28,10 +28,13 @@ func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
 func (t *UserDao) getUserById(conn redis.Conn, id int, action string) (user *User, err error) {
 	//	通过给定的id去redis查询这个用户
 	res, err := redis.String(conn.Do("HGet", "users", id))
-	fmt.Println("res=", res)
+	fmt.Println("res=", res, "err=", err)
 	if err != nil {
-		if err == redis.ErrNil { //表示在users 哈希中，没有找到对应的id
+		if err == redis.ErrNil && action == "login" { //表示在users 哈希中，没有找到对应的id
 			err = ERROR_USER_NOTEXISTS
+		} else if err == redis.ErrNil && action == "register" {
+			//	表示在users 哈希中，没有找到对应的id，可以完成注册
+			err = nil
 		}
 		return
 	}
@@ -58,16 +61,19 @@ func (t *UserDao) Register(userId int, userPwd string, userName string) (user *U
 		}
 	}(conn)
 	user, err = t.getUserById(conn, userId, "register")
-	fmt.Println("user=", user)
+	fmt.Println("user=", user, "err=", err)
 	if err != nil {
 		fmt.Println("错误信息为：", err)
 		return
 	}
 	//	判断用户是否存在
-	if user.UserId == userId {
-		err = ERROR_USER_EXISTS
-		return
+	if user != nil {
+		if user.UserId == userId {
+			err = ERROR_USER_EXISTS
+			return
+		}
 	}
+
 	//	如果用户不存在，就完成注册
 	user = &User{
 		UserId:   userId,

@@ -8,6 +8,7 @@ import (
 // 定义两个变量,一个表示用户id，一个表示用户密码
 var userId int
 var userPwd string
+var userName string
 
 func main() {
 	// 接受用户的选择
@@ -42,6 +43,26 @@ func main() {
 			}
 		case 2:
 			fmt.Println("注册用户")
+			fmt.Println("请输入用户id")
+			_, err := fmt.Scanf("%d\n", &userId)
+			if err != nil {
+				return
+			}
+			fmt.Println("请输入用户密码")
+			_, err = fmt.Scanf("%s\n", &userPwd)
+			if err != nil {
+				return
+			}
+			fmt.Println("请输入用户名")
+			_, err = fmt.Scanf("%s\n", &userName)
+			if err != nil {
+				return
+			}
+			up := &process.UserProcess{}
+			err = up.Register(userId, userPwd, userName)
+			if err != nil {
+				return
+			}
 		case 3:
 			fmt.Println("退出系统")
 		default:

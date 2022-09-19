@@ -25,9 +25,10 @@ func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
 }
 
 // 根据用户id返回一个User实例和err
-func (t *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
+func (t *UserDao) getUserById(conn redis.Conn, id int, action string) (user *User, err error) {
 	//	通过给定的id去redis查询这个用户
 	res, err := redis.String(conn.Do("HGet", "users", id))
+	fmt.Println("res=", res)
 	if err != nil {
 		if err == redis.ErrNil { //表示在users 哈希中，没有找到对应的id
 			err = ERROR_USER_NOTEXISTS
@@ -39,6 +40,49 @@ func (t *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
 	err = json.Unmarshal([]byte(res), user)
 	if err != nil {
 		fmt.Println("json.Unmarshal err=", err)
+		return
+	}
+	return
+}
+
+// Register 完成用户注册的校验
+// 如果用户id已经存在，则返回对应的错误信息
+// 如果用户id不存在，则返回一个user实例
+func (t *UserDao) Register(userId int, userPwd string, userName string) (user *User, err error) {
+	//	先从UserDao的连接池中取出一根连接
+	conn := t.pool.Get()
+	defer func(conn redis.Conn) {
+		err := conn.Close()
+		if err != nil {
+			return
+		}
+	}(conn)
+	user, err = t.getUserById(conn, userId, "register")
+	fmt.Println("user=", user)
+	if err != nil {
+		fmt.Println("错误信息为：", err)
+		return
+	}
+	//	判断用户是否存在
+	if user.UserId == userId {
+		err = ERROR_USER_EXISTS
+		return
+	}
+	//	如果用户不存在，就完成注册
+	user = &User{
+		UserId:   userId,
+		UserPwd:  userPwd,
+		UserName: userName,
+	}
+	//	将user序列化
+	data, err := json.Marshal(user)
+	if err != nil {
+		return
+	}
+	//	将序列化后的user保存到redis
+	_, err = conn.Do("HSet", "users", userId, string(data))
+	if err != nil {
+		fmt.Println("保存注册用户错误 err=", err)
 		return
 	}
 	return
@@ -56,7 +100,7 @@ func (t *UserDao) Login(userId int, userPwd string) (user *User, err error) {
 			return
 		}
 	}(conn)
-	user, err = t.getUserById(conn, userId)
+	user, err = t.getUserById(conn, userId, "login")
 	if err != nil {
 		return
 	}

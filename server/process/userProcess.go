@@ -10,7 +10,8 @@ import (
 )
 
 type UserProcess struct {
-	Conn net.Conn
+	Conn   net.Conn
+	UserId int
 }
 
 // ServerProcessRegister 编写一个函数serverProcessRegister函数，处理注册请求

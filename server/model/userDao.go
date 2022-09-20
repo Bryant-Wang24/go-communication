@@ -25,17 +25,11 @@ func NewUserDao(pool *redis.Pool) (userDao *UserDao) {
 }
 
 // 根据用户id返回一个User实例和err
-func (t *UserDao) getUserById(conn redis.Conn, id int, action string) (user *User, err error) {
+func (t *UserDao) getUserById(conn redis.Conn, id int) (user *User, err error) {
 	//	通过给定的id去redis查询这个用户
 	res, err := redis.String(conn.Do("HGet", "users", id))
-	fmt.Println("res=", res, "err=", err)
+	fmt.Println("redis查询用户res=", res, "redis查询用户err=", err)
 	if err != nil {
-		if err == redis.ErrNil && action == "login" { //表示在users 哈希中，没有找到对应的id
-			err = ERROR_USER_NOTEXISTS
-		} else if err == redis.ErrNil && action == "register" {
-			//	表示在users 哈希中，没有找到对应的id，可以完成注册
-			err = nil
-		}
 		return
 	}
 	user = &User{}
@@ -60,35 +54,33 @@ func (t *UserDao) Register(userId int, userPwd string, userName string) (user *U
 			return
 		}
 	}(conn)
-	user, err = t.getUserById(conn, userId, "register")
+	user, err = t.getUserById(conn, userId)
 	fmt.Println("user=", user, "err=", err)
 	if err != nil {
-		fmt.Println("错误信息为：", err)
+		if err == redis.ErrNil { //表示在users 哈希中，没有找到对应的id，可以完成注册
+			err = nil
+			user = &User{
+				UserId:   userId,
+				UserPwd:  userPwd,
+				UserName: userName,
+			}
+			//	将user序列化
+			data, err := json.Marshal(user)
+			if err != nil {
+				return nil, err
+			}
+			//	将序列化后的user保存到redis
+			_, err = conn.Do("HSet", "users", user.UserId, string(data))
+			if err != nil {
+				fmt.Println("保存注册用户错误 err=", err)
+				return nil, err
+			}
+		}
 		return
 	}
 	//	判断用户是否存在
-	if user != nil {
-		if user.UserId == userId {
-			err = ERROR_USER_EXISTS
-			return
-		}
-	}
-
-	//	如果用户不存在，就完成注册
-	user = &User{
-		UserId:   userId,
-		UserPwd:  userPwd,
-		UserName: userName,
-	}
-	//	将user序列化
-	data, err := json.Marshal(user)
-	if err != nil {
-		return
-	}
-	//	将序列化后的user保存到redis
-	_, err = conn.Do("HSet", "users", userId, string(data))
-	if err != nil {
-		fmt.Println("保存注册用户错误 err=", err)
+	if user.UserId == user.UserId {
+		err = ERROR_USER_EXISTS
 		return
 	}
 	return
@@ -106,8 +98,12 @@ func (t *UserDao) Login(userId int, userPwd string) (user *User, err error) {
 			return
 		}
 	}(conn)
-	user, err = t.getUserById(conn, userId, "login")
+	user, err = t.getUserById(conn, userId)
+	//fmt.Println("user=", user, "err=", err)
 	if err != nil {
+		if err == redis.ErrNil { //表示在users 哈希中，没有找到对应的id,不可登录
+			err = ERROR_USER_NOTEXISTS
+		}
 		return
 	}
 	//	这时证明这个用户

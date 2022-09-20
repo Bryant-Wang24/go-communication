@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"os"
 )
 
 type UserProcess struct {
@@ -85,13 +86,16 @@ func (t *UserProcess) Register(userId int, userPwd string, userName string) (err
 	if registerResMes.Code == 200 {
 		//这里还需要在客户端启动一个协程用来保持和服务端的通讯
 		//如果服务器有数据推送给客户端，则接受并显示在客户端的终端
-		go serverProcessMes(conn)
+		//go serverProcessMes(conn)
+		fmt.Println("注册成功")
+		os.Exit(0)
 		//显示我们的登陆成功的菜单【循环显示】
-		for {
-			ShowMenu()
-		}
+		//for {
+		//	ShowMenu()
+		//}
 	} else {
 		fmt.Println(registerResMes.Error)
+		os.Exit(0)
 	}
 	return
 }

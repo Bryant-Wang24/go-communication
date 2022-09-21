@@ -29,8 +29,8 @@ func (t *UserProcess) ServerProcessRegister(mes *message.Message) (err error) {
 	//	声明一个RegisterResMes
 	var registerResMes message.RegisterResMes
 	//	使用model.MyUserDao到redis数据库去验证
-	user, err := model.MyUserDao.Register(registerMes.User.UserId, registerMes.User.UserPwd, registerMes.User.UserName)
-	fmt.Println("user=", user, "err=", err)
+	err = model.MyUserDao.Register(&registerMes.User)
+	fmt.Println("err=", err)
 	if err != nil {
 		if err == model.ERROR_USER_EXISTS {
 			registerResMes.Code = 500
@@ -41,7 +41,7 @@ func (t *UserProcess) ServerProcessRegister(mes *message.Message) (err error) {
 		}
 	} else {
 		registerResMes.Code = 200
-		fmt.Println(user, "注册成功")
+		fmt.Println("注册成功")
 	}
 	//	将registerResMes序列化
 	data, err := json.Marshal(registerResMes)

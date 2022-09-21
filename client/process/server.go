@@ -1,7 +1,9 @@
 package process
 
 import (
+	"client/message"
 	"client/utils"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -21,7 +23,8 @@ func ShowMenu() {
 	}
 	switch key {
 	case 1:
-		fmt.Println("显示在线用户列表")
+		//fmt.Println("显示在线用户列表")
+		outputOnlineUser()
 	case 2:
 		fmt.Println("发送消息")
 	case 3:
@@ -48,6 +51,17 @@ func serverProcessMes(conn net.Conn) {
 			return
 		}
 		//	如果读取到消息
+		switch mes.Type {
+		case message.NotifyUserStatusMesType: //有人上线
+			//1、取出.NotifyUserStatusMes
+			var notifyUserStatusMes message.NotifyUserStatusMes
+			json.Unmarshal([]byte(mes.Data), &notifyUserStatusMes)
+			updateUserStatus(&notifyUserStatusMes)
+			//2.把这个用户的信息，状态保存到客户map[int]User中
+		default:
+			fmt.Println("服务器返回了消息")
+		}
+
 		fmt.Printf("mes=%v", mes)
 	}
 }

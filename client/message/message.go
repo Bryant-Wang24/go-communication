@@ -3,10 +3,18 @@ package message
 import "client/model"
 
 const (
-	LoginMesType       = "LoginMes"
-	LoginResMesType    = "LoginResMes"
-	RegisterMesType    = "RegisterMes"
-	RegisterResMesType = "RegisterResMes"
+	LoginMesType            = "LoginMes"
+	LoginResMesType         = "LoginResMes"
+	RegisterMesType         = "RegisterMes"
+	RegisterResMesType      = "RegisterResMes"
+	NotifyUserStatusMesType = "NotifyUserStatusMes"
+)
+
+// 定义几个用户状态常量
+const (
+	UserOffline = iota
+	UserOnline
+	UserBusyStatus
 )
 
 type Message struct {
@@ -33,4 +41,10 @@ type RegisterMes struct {
 type RegisterResMes struct {
 	Code  int    `json:"code"`
 	Error string `json:"error"`
+}
+
+// NotifyUserStatusMes 为了配合服务器端推送用户状态变化的消息
+type NotifyUserStatusMes struct {
+	UserId int `json:"userId"`
+	Status int `json:"status"`
 }

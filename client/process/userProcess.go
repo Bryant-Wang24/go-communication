@@ -179,15 +179,21 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 				continue
 			}
 			fmt.Println("当前在线用户id:\t", v)
+			//完成客户端的onlineUsers 初始化
+			user := &message.User{
+				UserId:     v,
+				UserStatus: message.UserOnline,
+			}
+			onlineUsers[v] = user
 		}
 		//这里还需要在客户端启动一个协程用来保持和服务端的通讯
 		//如果服务器有数据推送给客户端，则接受并显示在客户端的终端
 		go serverProcessMes(conn)
 
 		//显示我们的登陆成功的菜单【循环显示】
-		//for {
-		//	ShowMenu()
-		//}
+		for {
+			ShowMenu()
+		}
 	} else {
 		fmt.Println(loginResMes.Error)
 	}

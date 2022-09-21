@@ -100,6 +100,16 @@ func (t *UserProcess) ServerProcessLogin(mes *message.Message) (err error) {
 	} else {
 		loginResMes.Code = 200
 		fmt.Println(user, "登陆成功")
+		//这里，因为用户已经登陆成功，我们就把该登陆成功的用户放入到userMgr中
+		//将登陆成功的用户的userId赋给this
+		t.UserId = loginMes.UserId
+		userMgr.AddOnlineUser(t)
+		//将当前在线用户的id放入到loginResMes.UsersId
+		//遍历userMgr.onlineUsers
+		for id := range userMgr.onlineUsers {
+			loginResMes.UsersId = append(loginResMes.UsersId, id)
+			fmt.Println("在线用户id=", id)
+		}
 	}
 	//	将loginResMes序列化
 	data, err := json.Marshal(loginResMes)

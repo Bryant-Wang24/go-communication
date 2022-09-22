@@ -178,7 +178,7 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 			if v == userId {
 				continue
 			}
-			fmt.Println("当前在线用户id:\t", v)
+			fmt.Println("在线用户id:", v)
 			//完成客户端的onlineUsers 初始化
 			user := &message.User{
 				UserId:     v,

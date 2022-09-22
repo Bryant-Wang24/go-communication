@@ -55,7 +55,10 @@ func serverProcessMes(conn net.Conn) {
 		case message.NotifyUserStatusMesType: //有人上线
 			//1、取出.NotifyUserStatusMes
 			var notifyUserStatusMes message.NotifyUserStatusMes
-			json.Unmarshal([]byte(mes.Data), &notifyUserStatusMes)
+			err := json.Unmarshal([]byte(mes.Data), &notifyUserStatusMes)
+			if err != nil {
+				return
+			}
 			updateUserStatus(&notifyUserStatusMes)
 			//2.把这个用户的信息，状态保存到客户map[int]User中
 		default:

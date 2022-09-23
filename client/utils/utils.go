@@ -15,7 +15,6 @@ type Transfer struct {
 }
 
 func (t *Transfer) ReadPkg() (mes message.Message, err error) {
-	fmt.Println("读取客户端发送的数据...")
 	//conn.Read在conn没有被关闭的情况下，才会阻塞，如果客户端关闭了conn，就不会阻塞
 	_, err = t.Conn.Read(t.Buf[:4])
 

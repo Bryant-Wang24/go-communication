@@ -53,7 +53,7 @@ func serverProcessMes(conn net.Conn) {
 		Conn: conn,
 	}
 	for {
-		fmt.Println("客户端正在读取服务器发送的消息")
+		fmt.Println("客户端正在读取服务器发送的消息..............")
 		mes, err := tf.ReadPkg()
 		if err != nil {
 			fmt.Println("tf.ReadPkg fail err=", err)
@@ -68,12 +68,12 @@ func serverProcessMes(conn net.Conn) {
 			if err != nil {
 				return
 			}
-			updateUserStatus(&notifyUserStatusMes)
 			//2.把这个用户的信息，状态保存到客户map[int]User中
+			updateUserStatus(&notifyUserStatusMes)
+		case message.SmsMesType: //有人群发消息
+			outputGroupMes(&mes)
 		default:
 			fmt.Println("服务器返回了消息")
 		}
-
-		fmt.Printf("mes=%v", mes)
 	}
 }

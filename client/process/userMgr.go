@@ -3,6 +3,7 @@ package process
 import (
 	"client/message"
 	"client/model"
+	"encoding/json"
 	"fmt"
 )
 
@@ -30,4 +31,17 @@ func updateUserStatus(notifyUserStatusMes *message.NotifyUserStatusMes) {
 	user.UserStatus = notifyUserStatusMes.Status
 	onlineUsers[notifyUserStatusMes.UserId] = user
 	outputOnlineUser()
+}
+
+// 展示群发消息
+func outputGroupMes(mes *message.Message) {
+	//反序列化mes.Data
+	var smsMes message.SmsMes
+	err := json.Unmarshal([]byte(mes.Data), &smsMes)
+	if err != nil {
+		fmt.Println("json.Unmarshal err", err)
+		return
+	}
+	//显示群聊消息
+	fmt.Printf("用户id:\t%d 对大家说:\t%s\n", smsMes.UserId, smsMes.Content)
 }

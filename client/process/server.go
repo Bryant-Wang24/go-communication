@@ -17,16 +17,25 @@ func ShowMenu() {
 	fmt.Println("-------4.退出系统---------")
 	fmt.Println("请选择1-4")
 	var key int
+	var content string
+	smsProcess := &SmsProcess{}
 	_, err := fmt.Scanf("%d\n", &key)
 	if err != nil {
 		return
 	}
 	switch key {
 	case 1:
-		//fmt.Println("显示在线用户列表")
 		outputOnlineUser()
 	case 2:
-		fmt.Println("发送消息")
+		fmt.Println("你想对大家说什么")
+		_, err := fmt.Scanf("%s\n", &content)
+		if err != nil {
+			return
+		}
+		err = smsProcess.SendGroupMes(content)
+		if err != nil {
+			return
+		}
 	case 3:
 		fmt.Println("消息列表")
 	case 4:

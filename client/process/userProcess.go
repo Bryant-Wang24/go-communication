@@ -172,6 +172,10 @@ func (t *UserProcess) Login(userId int, userPwd string) (err error) {
 	err = json.Unmarshal([]byte(mes.Data), &loginResMes)
 	if loginResMes.Code == 200 {
 		//登录成功，显示当前在线用户列表
+		//初始化CurUser
+		CurUser.Conn = conn
+		CurUser.UserId = userId
+		CurUser.UserStatus = message.UserOnline
 		fmt.Println("当前在线用户列表如下：")
 		for _, v := range loginResMes.UsersId {
 			//如果要求不显示自己在线，可以增加一个用户id的过滤

@@ -65,6 +65,7 @@ func main() {
 			}
 		case 3:
 			fmt.Println("退出系统")
+			return
 		default:
 			fmt.Println("你的输入有误,请重新输入")
 		}

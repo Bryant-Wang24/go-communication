@@ -13,9 +13,9 @@ func ShowMenu() {
 	fmt.Println("-------恭喜xxx登陆成功---------")
 	fmt.Println("-------1.显示在线用户列表---------")
 	fmt.Println("-------2.发送消息---------")
-	fmt.Println("-------3.消息列表---------")
-	fmt.Println("-------4.退出系统---------")
-	fmt.Println("请选择1-4")
+	//fmt.Println("-------3.消息列表---------")
+	fmt.Println("-------3.退出系统---------")
+	fmt.Println("请选择1-3")
 	var key int
 	var content string
 	smsProcess := &SmsProcess{}
@@ -36,9 +36,9 @@ func ShowMenu() {
 		if err != nil {
 			return
 		}
+	//case 3:
+	//	fmt.Println("消息列表")
 	case 3:
-		fmt.Println("消息列表")
-	case 4:
 		fmt.Println("退出系统")
 		os.Exit(0)
 	default:

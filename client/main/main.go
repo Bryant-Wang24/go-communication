@@ -18,7 +18,7 @@ func main() {
 		fmt.Println("\t\t\t 1 登陆聊天室")
 		fmt.Println("\t\t\t 2 注册用户")
 		fmt.Println("\t\t\t 3 退出系统")
-		fmt.Println("\t\t\t 3 请选择1-3)")
+		fmt.Println("\t\t 请选择1-3")
 		_, err := fmt.Scanf("%d\n", &key)
 		if err != nil {
 			return
